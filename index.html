@@ -274,9 +274,17 @@
 
     .summary-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-columns: repeat(4, 1fr);
       gap: 10px;
       margin-bottom: 20px;
+    }
+
+    .summary-card.carryover {
+      border-left-color: #ff9800;
+    }
+
+    .summary-card.carryover .summary-amount {
+      color: #ff9800;
     }
 
     .summary-card {
@@ -491,7 +499,7 @@
       }
 
       .summary-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
       }
     }
   </style>
@@ -591,16 +599,20 @@
       <div class="section">
         <h2>今月の収支</h2>
         <div class="summary-grid">
+          <div class="summary-card carryover">
+            <div class="summary-label">前月繰越</div>
+            <div class="summary-amount">¥<span id="carryOver">0</span></div>
+          </div>
           <div class="summary-card income">
-            <div class="summary-label">収入</div>
+            <div class="summary-label">今月の収入</div>
             <div class="summary-amount">¥<span id="totalIncome">0</span></div>
           </div>
           <div class="summary-card expense">
-            <div class="summary-label">支出</div>
+            <div class="summary-label">今月の支出</div>
             <div class="summary-amount">¥<span id="totalExpense">0</span></div>
           </div>
           <div class="summary-card balance">
-            <div class="summary-label">残高</div>
+            <div class="summary-label">累計残高</div>
             <div class="summary-amount">¥<span id="monthBalance">0</span></div>
           </div>
         </div>
@@ -902,21 +914,27 @@
       const currentMonth = new Date().toISOString().substring(0, 7);
       let totalIncome = 0;
       let totalExpense = 0;
-      let savings = 0;
+      let carryOver = 0;
 
       records.forEach(record => {
-        if (record.date.substring(0, 7) === currentMonth) {
+        const m = record.date.substring(0, 7);
+        if (m === currentMonth) {
           if (record.type === 'income') {
             totalIncome += record.amount;
           } else {
             totalExpense += record.amount;
           }
+        } else if (m < currentMonth) {
+          // 過去の月はすべて繰越に集約
+          carryOver += record.type === 'income' ? record.amount : -record.amount;
         }
       });
 
-      savings = totalIncome - totalExpense;
+      // 累計残高＝前月繰越＋今月の収支
+      const savings = carryOver + totalIncome - totalExpense;
 
       document.getElementById('displaySavings').textContent = savings.toLocaleString();
+      document.getElementById('carryOver').textContent = carryOver.toLocaleString();
       document.getElementById('totalIncome').textContent = totalIncome.toLocaleString();
       document.getElementById('totalExpense').textContent = totalExpense.toLocaleString();
       document.getElementById('monthBalance').textContent = savings.toLocaleString();
@@ -1024,7 +1042,18 @@
       });
     }
 
-    // 今月の日ごとの累積残高
+    // 指定日より前の全記録の累計（繰越額）
+    function getCarryOverBefore(dateStr) {
+      let sum = 0;
+      records.forEach(r => {
+        if (r.date < dateStr) {
+          sum += r.type === 'income' ? r.amount : -r.amount;
+        }
+      });
+      return sum;
+    }
+
+    // 今月の日ごとの累積残高（前月繰越からスタート）
     function getMonthData() {
       const today = new Date();
       const year = today.getFullYear();
@@ -1034,7 +1063,8 @@
 
       const labels = [];
       const data = [];
-      let cumulative = 0;
+      // 前月までの繰越からスタート
+      let cumulative = getCarryOverBefore(`${monthStr}-01`);
 
       for (let d = 1; d <= daysInMonth; d++) {
         const dateStr = `${monthStr}-${String(d).padStart(2, '0')}`;
@@ -1051,12 +1081,13 @@
       return { labels, data };
     }
 
-    // 今年の月ごとの累積残高
+    // 今年の月ごとの累積残高（前年繰越からスタート）
     function getYearData() {
       const year = new Date().getFullYear();
       const labels = [];
       const data = [];
-      let cumulative = 0;
+      // 前年までの繰越からスタート
+      let cumulative = getCarryOverBefore(`${year}-01-01`);
 
       for (let m = 1; m <= 12; m++) {
         const monthStr = `${year}-${String(m).padStart(2, '0')}`;
@@ -1111,6 +1142,7 @@
       const currentMonth = new Date().toISOString().substring(0, 7);
       let totalIncome = 0;
       let totalExpense = 0;
+      let carryOver = 0;
 
       const csv = [
         ['目標金額', goal],
@@ -1119,20 +1151,24 @@
       ];
 
       records.forEach(record => {
-        if (record.date.substring(0, 7) === currentMonth) {
+        const m = record.date.substring(0, 7);
+        if (m === currentMonth) {
           csv.push([record.date, record.type === 'income' ? '収入' : '支出', record.amount, (record.memo || '').replace(/,/g, '、')]);
           if (record.type === 'income') {
             totalIncome += record.amount;
           } else {
             totalExpense += record.amount;
           }
+        } else if (m < currentMonth) {
+          carryOver += record.type === 'income' ? record.amount : -record.amount;
         }
       });
 
       csv.push(['']);
-      csv.push(['収入', totalIncome]);
-      csv.push(['支出', totalExpense]);
-      csv.push(['残高', totalIncome - totalExpense]);
+      csv.push(['前月繰越', carryOver]);
+      csv.push(['今月の収入', totalIncome]);
+      csv.push(['今月の支出', totalExpense]);
+      csv.push(['累計残高', carryOver + totalIncome - totalExpense]);
 
       let csvContent = csv.map(row => row.join(',')).join('\n');
       let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
