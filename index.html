@@ -20,7 +20,7 @@
     }
 
     .container {
-      max-width: 600px;
+      max-width: 700px;
       margin: 0 auto;
     }
 
@@ -66,7 +66,9 @@
     }
 
     input[type="number"],
-    input[type="text"] {
+    input[type="text"],
+    input[type="date"],
+    select {
       width: 100%;
       padding: 12px;
       border: 1px solid #ddd;
@@ -76,7 +78,9 @@
     }
 
     input[type="number"]:focus,
-    input[type="text"]:focus {
+    input[type="text"]:focus,
+    input[type="date"]:focus,
+    select:focus {
       outline: none;
       border-color: #4CAF50;
       box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
@@ -127,7 +131,20 @@
       background-color: #0b7dda;
     }
 
-    /* モード選択 */
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 14px;
+      flex: none;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .goal-setup {
+      text-align: center;
+    }
+
     .mode-selector {
       display: flex;
       gap: 10px;
@@ -156,7 +173,6 @@
       border-color: #4CAF50;
     }
 
-    /* 画像プレビュー */
     .image-preview {
       margin-top: 10px;
       max-width: 200px;
@@ -183,11 +199,6 @@
       font-size: 14px;
     }
 
-    .hidden {
-      display: none;
-    }
-
-    /* 目標情報 */
     .goal-info {
       background-color: #f9f9f9;
       padding: 15px;
@@ -209,13 +220,6 @@
       margin-bottom: 10px;
     }
 
-    .savings-amount {
-      font-size: 20px;
-      font-weight: bold;
-      color: #2196F3;
-      margin-bottom: 15px;
-    }
-
     .goal-image-display {
       text-align: center;
       margin-bottom: 15px;
@@ -235,23 +239,13 @@
       margin-bottom: 10px;
     }
 
-    /* 月の残高表示 */
-    .balance-display {
-      background-color: #f0f8ff;
-      padding: 15px;
-      border-radius: 6px;
-      text-align: center;
-      border-left: 4px solid #2196F3;
-    }
-
-    .balance-amount {
-      font-size: 22px;
+    .savings-amount {
+      font-size: 20px;
       font-weight: bold;
       color: #2196F3;
-      margin-top: 8px;
+      margin-bottom: 15px;
     }
 
-    /* プログレスバー */
     .progress-container {
       margin: 20px 0;
     }
@@ -278,15 +272,58 @@
       font-weight: 500;
     }
 
-    /* グラフ */
-    .chart-container {
-      position: relative;
-      height: 300px;
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
       margin-bottom: 20px;
     }
 
-    /* 履歴 */
-    .history-item {
+    .summary-card {
+      background-color: #f9f9f9;
+      padding: 15px;
+      border-radius: 6px;
+      text-align: center;
+      border-left: 4px solid #ddd;
+    }
+
+    .summary-card.income {
+      border-left-color: #4CAF50;
+    }
+
+    .summary-card.expense {
+      border-left-color: #f44336;
+    }
+
+    .summary-card.balance {
+      border-left-color: #2196F3;
+    }
+
+    .summary-label {
+      color: #666;
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+
+    .summary-amount {
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .summary-card.income .summary-amount {
+      color: #4CAF50;
+    }
+
+    .summary-card.expense .summary-amount {
+      color: #f44336;
+    }
+
+    .summary-card.balance .summary-amount {
+      color: #2196F3;
+    }
+
+    .record-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -297,28 +334,112 @@
       border-radius: 4px;
     }
 
-    .history-date {
-      color: #999;
-      font-size: 14px;
-      min-width: 80px;
+    .record-item.expense {
+      border-left-color: #f44336;
     }
 
-    .history-amount {
-      color: #4CAF50;
-      font-weight: bold;
-      font-size: 16px;
+    .record-info {
       flex: 1;
-      text-align: center;
     }
 
-    .history-total {
-      color: #666;
-      font-size: 14px;
+    .record-date {
+      color: #999;
+      font-size: 12px;
+      margin-bottom: 3px;
+    }
+
+    .record-type {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .record-type.income {
+      background-color: rgba(76, 175, 80, 0.2);
+      color: #4CAF50;
+    }
+
+    .record-type.expense {
+      background-color: rgba(244, 67, 54, 0.2);
+      color: #f44336;
+    }
+
+    .record-amount {
+      font-size: 16px;
+      font-weight: bold;
+      margin-right: 15px;
       min-width: 100px;
       text-align: right;
     }
 
-    /* 通知 */
+    .record-amount.income {
+      color: #4CAF50;
+    }
+
+    .record-amount.expense {
+      color: #f44336;
+    }
+
+    .record-actions {
+      display: flex;
+      gap: 5px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 30px;
+      border-radius: 8px;
+      max-width: 400px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-header {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #999;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin-bottom: 20px;
+    }
+
     .achievement-banner {
       background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
       color: white;
@@ -345,7 +466,6 @@
       }
     }
 
-    /* レスポンシブ */
     @media (max-width: 480px) {
       body {
         padding: 10px;
@@ -362,34 +482,33 @@
       .button-group {
         flex-direction: column;
       }
+
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- ヘッダー -->
     <div class="header">
       <h1>🏦 貯金目標アプリ</h1>
-      <p>支出を記録していくと自動で貯金が増えます</p>
+      <p>毎日の収支を記録して目標貯金を目指そう</p>
     </div>
 
-    <!-- 達成バナー -->
     <div id="achievementBanner" class="achievement-banner hidden">
       <h3>🎉 目標達成！</h3>
       <p>おめでとうございます！目標金額に到達しました</p>
     </div>
 
-    <!-- 目標設定画面 -->
-    <div id="goalSetup" class="section">
+    <div id="goalSetup" class="section goal-setup">
       <h2>目標を設定</h2>
       
-      <!-- モード選択 -->
       <div class="mode-selector">
         <button class="mode-btn active" onclick="switchMode('simple')">シンプル（金額のみ）</button>
         <button class="mode-btn" onclick="switchMode('detailed')">詳細（品名・写真）</button>
       </div>
 
-      <!-- シンプルモード -->
       <div id="simpleMode">
         <div class="input-group">
           <label for="goalInput">欲しい金額（円）</label>
@@ -398,7 +517,6 @@
         <button class="btn-primary" onclick="setGoal()" style="width: 100%;">目標を設定する</button>
       </div>
 
-      <!-- 詳細モード -->
       <div id="detailedMode" class="hidden">
         <div class="input-group">
           <label for="goalName">欲しいもの（品名）</label>
@@ -417,9 +535,7 @@
       </div>
     </div>
 
-    <!-- メイン画面 -->
     <div id="mainApp" class="hidden">
-      <!-- 目標情報 -->
       <div class="section">
         <div class="goal-info">
           <div id="goalImageDisplay" class="goal-image-display"></div>
@@ -433,7 +549,6 @@
           <div class="savings-amount">¥<span id="displaySavings">0</span></div>
         </div>
 
-        <!-- プログレスバー -->
         <div class="progress-container">
           <div class="progress-bar">
             <div id="progressFill" class="progress-fill" style="width: 0%"></div>
@@ -442,39 +557,56 @@
         </div>
       </div>
 
-      <!-- 収支入力 -->
       <div class="section">
-        <h2>今月の収支を入力</h2>
+        <h2>収支を記録</h2>
         <div class="input-group">
-          <label for="incomeInput">収入（円）</label>
-          <input type="number" id="incomeInput" placeholder="今月の収入" min="0" step="1000">
+          <label for="recordDate">日付</label>
+          <input type="date" id="recordDate">
         </div>
         <div class="input-group">
-          <label for="expenseInput">支出（円）</label>
-          <input type="number" id="expenseInput" placeholder="今月の支出" min="0" step="1000">
+          <label for="recordType">種類</label>
+          <select id="recordType">
+            <option value="income">収入</option>
+            <option value="expense">支出</option>
+          </select>
         </div>
-        <div class="input-group balance-display">
-          <label>月の残高</label>
-          <div class="balance-amount">¥<span id="monthBalance">0</span></div>
+        <div class="input-group">
+          <label for="recordAmount">金額（円）</label>
+          <input type="number" id="recordAmount" placeholder="金額を入力" min="1" step="1000">
         </div>
-        <button class="btn-primary" onclick="addMonthlyBalance()" style="width: 100%;">貯金に加える</button>
+        <button class="btn-primary" onclick="addRecord()" style="width: 100%;">記録する</button>
       </div>
 
-      <!-- グラフ -->
+      <div class="section">
+        <h2>今月の収支</h2>
+        <div class="summary-grid">
+          <div class="summary-card income">
+            <div class="summary-label">収入</div>
+            <div class="summary-amount">¥<span id="totalIncome">0</span></div>
+          </div>
+          <div class="summary-card expense">
+            <div class="summary-label">支出</div>
+            <div class="summary-amount">¥<span id="totalExpense">0</span></div>
+          </div>
+          <div class="summary-card balance">
+            <div class="summary-label">残高</div>
+            <div class="summary-amount">¥<span id="monthBalance">0</span></div>
+          </div>
+        </div>
+      </div>
+
       <div id="chartSection" class="section hidden">
-        <h2>貯金推移（直近7日）</h2>
+        <h2>収支推移（直近7日）</h2>
         <div class="chart-container">
           <canvas id="savingsChart"></canvas>
         </div>
       </div>
 
-      <!-- 履歴 -->
-      <div id="historySection" class="section hidden">
-        <h2>記録履歴</h2>
-        <div id="historyList"></div>
+      <div id="recordsSection" class="section hidden">
+        <h2>記録一覧</h2>
+        <div id="recordsList"></div>
       </div>
 
-      <!-- 操作ボタン -->
       <div class="section">
         <div class="button-group">
           <button class="btn-secondary" onclick="downloadData()">データをダウンロード</button>
@@ -484,24 +616,50 @@
     </div>
   </div>
 
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeEditModal()">×</button>
+      <div class="modal-header">記録を編集</div>
+      <div class="input-group">
+        <label for="editDate">日付</label>
+        <input type="date" id="editDate">
+      </div>
+      <div class="input-group">
+        <label for="editType">種類</label>
+        <select id="editType">
+          <option value="income">収入</option>
+          <option value="expense">支出</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label for="editAmount">金額（円）</label>
+        <input type="number" id="editAmount" min="1" step="1000">
+      </div>
+      <div class="button-group">
+        <button class="btn-primary" onclick="saveEdit()">保存</button>
+        <button class="btn-danger" onclick="closeEditModal()">キャンセル</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // グローバル変数
     let goal = 0;
-    let savings = 0;
-    let history = [];
+    let records = [];
     let achievementNotified = false;
     let chart = null;
-    let currentMode = 'simple'; // 'simple' or 'detailed'
+    let currentMode = 'simple';
     let goalName = '';
-    let goalImage = null; // Base64形式の画像データ
-    let monthlyRecords = []; // 月ごとの収支記録
+    let goalImage = null;
+    let editingIndex = -1;
 
-    // ページ読み込み時
     window.addEventListener('load', function() {
       loadData();
       updateDisplay();
       
-      // 画像入力のイベントリスナーを設定
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('recordDate').value = today;
+      document.getElementById('editDate').value = today;
+
       const imageInput = document.getElementById('goalImage');
       if (imageInput) {
         imageInput.addEventListener('change', function(e) {
@@ -516,48 +674,33 @@
           }
         });
       }
-
-      // 収入・支出入力フィールドのイベントリスナーを設定
-      const incomeInput = document.getElementById('incomeInput');
-      const expenseInput = document.getElementById('expenseInput');
-      if (incomeInput && expenseInput) {
-        incomeInput.addEventListener('input', calculateMonthBalance);
-        expenseInput.addEventListener('input', calculateMonthBalance);
-      }
     });
 
-    // ローカルストレージから読み込み
     function loadData() {
       const stored = localStorage.getItem('savingsAppData');
       if (stored) {
         const data = JSON.parse(stored);
         goal = data.goal || 0;
-        savings = data.savings || 0;
-        history = data.history || [];
+        records = data.records || [];
         achievementNotified = data.achievementNotified || false;
         currentMode = data.currentMode || 'simple';
         goalName = data.goalName || '';
         goalImage = data.goalImage || null;
-        monthlyRecords = data.monthlyRecords || [];
       }
     }
 
-    // ローカルストレージに保存
     function saveData() {
       const data = {
         goal,
-        savings,
-        history,
+        records,
         achievementNotified,
         currentMode,
         goalName,
-        goalImage,
-        monthlyRecords
+        goalImage
       };
       localStorage.setItem('savingsAppData', JSON.stringify(data));
     }
 
-    // モード切り替え
     function switchMode(mode) {
       currentMode = mode;
       document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
@@ -572,7 +715,6 @@
       }
     }
 
-    // 目標を設定（シンプルモード）
     function setGoal() {
       const input = document.getElementById('goalInput');
       const amount = parseInt(input.value);
@@ -586,15 +728,13 @@
       goal = amount;
       goalName = '';
       goalImage = null;
-      savings = 0;
-      history = [];
+      records = [];
       achievementNotified = false;
       saveData();
       updateDisplay();
       alert(`目標金額: ¥${amount.toLocaleString()} で設定しました！`);
     }
 
-    // 目標を設定（詳細モード）
     function setGoalDetailed() {
       const name = document.getElementById('goalName').value;
       const price = parseInt(document.getElementById('goalPrice').value);
@@ -612,17 +752,13 @@
       currentMode = 'detailed';
       goal = price;
       goalName = name;
-      savings = 0;
-      history = [];
+      records = [];
       achievementNotified = false;
       saveData();
       updateDisplay();
       alert(`目標: ${name} ¥${price.toLocaleString()} で設定しました！`);
     }
 
-
-
-    // 画像プレビュー表示
     function showImagePreview(imageData) {
       const preview = document.getElementById('imagePreview');
       preview.innerHTML = `
@@ -631,84 +767,80 @@
       `;
     }
 
-    // 画像削除
     function clearImage() {
       goalImage = null;
       document.getElementById('goalImage').value = '';
       document.getElementById('imagePreview').innerHTML = '';
     }
 
-    // 月の収支を計算（リアルタイム）
-    function calculateMonthBalance() {
-      const income = parseInt(document.getElementById('incomeInput').value) || 0;
-      const expense = parseInt(document.getElementById('expenseInput').value) || 0;
-      const balance = income - expense;
-      document.getElementById('monthBalance').textContent = balance.toLocaleString();
-      return balance;
-    }
+    function addRecord() {
+      const date = document.getElementById('recordDate').value;
+      const type = document.getElementById('recordType').value;
+      const amount = parseInt(document.getElementById('recordAmount').value);
 
-    // 月の残高を貯金に加える
-    function addMonthlyBalance() {
-      const income = parseInt(document.getElementById('incomeInput').value);
-      const expense = parseInt(document.getElementById('expenseInput').value);
-
-      if (isNaN(income) || isNaN(expense)) {
-        alert('収入と支出を入力してください');
+      if (!date || !amount || amount <= 0) {
+        alert('日付と金額を入力してください');
         return;
       }
 
-      const balance = income - expense;
-
-      if (balance < 0) {
-        alert('支出が収入を上回っています');
-        return;
-      }
-
-      if (balance === 0) {
-        alert('残高が0円です');
-        return;
-      }
-
-      const today = new Date().toISOString().split('T')[0];
-      const month = today.substring(0, 7); // YYYY-MM形式
-
-      // 月の記録を追加
-      monthlyRecords.push({
-        month: month,
-        income: income,
-        expense: expense,
-        balance: balance,
-        date: today
+      records.push({
+        date: date,
+        type: type,
+        amount: amount
       });
 
-      // 貯金に残高を加算
-      savings += balance;
-      history.push({
-        date: today,
-        amount: balance,
-        savings: savings,
-        type: 'monthly'
-      });
-
-      document.getElementById('incomeInput').value = '';
-      document.getElementById('expenseInput').value = '';
-      document.getElementById('monthBalance').textContent = '0';
-      
+      document.getElementById('recordAmount').value = '';
       saveData();
       updateDisplay();
-      alert(`¥${balance.toLocaleString()} を貯金に加えました`);
+      alert(`¥${amount.toLocaleString()} を記録しました`);
+    }
 
-      // 達成判定
-      if (savings >= goal && !achievementNotified) {
-        achievementNotified = true;
+    function openEditModal(index) {
+      editingIndex = index;
+      const record = records[index];
+      document.getElementById('editDate').value = record.date;
+      document.getElementById('editType').value = record.type;
+      document.getElementById('editAmount').value = record.amount;
+      document.getElementById('editModal').classList.add('active');
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').classList.remove('active');
+      editingIndex = -1;
+    }
+
+    function saveEdit() {
+      const date = document.getElementById('editDate').value;
+      const type = document.getElementById('editType').value;
+      const amount = parseInt(document.getElementById('editAmount').value);
+
+      if (!date || !amount || amount <= 0) {
+        alert('日付と金額を入力してください');
+        return;
+      }
+
+      records[editingIndex] = {
+        date: date,
+        type: type,
+        amount: amount
+      };
+
+      saveData();
+      updateDisplay();
+      closeEditModal();
+      alert('記録を更新しました');
+    }
+
+    function deleteRecord(index) {
+      if (confirm('この記録を削除しますか？')) {
+        records.splice(index, 1);
         saveData();
         updateDisplay();
+        alert('記録を削除しました');
       }
     }
 
-    // 表示を更新
     function updateDisplay() {
-      // 目標設定画面 / メイン画面の切り替え
       if (goal === 0) {
         document.getElementById('goalSetup').classList.remove('hidden');
         document.getElementById('mainApp').classList.add('hidden');
@@ -717,7 +849,6 @@
         document.getElementById('mainApp').classList.remove('hidden');
       }
 
-      // 詳細モードの情報を表示
       if (currentMode === 'detailed' && goalName) {
         document.getElementById('goalNameDisplay').classList.remove('hidden');
         document.getElementById('goalNameText').textContent = goalName;
@@ -732,45 +863,62 @@
         document.getElementById('goalImageDisplay').innerHTML = '';
       }
 
-      // 数字の更新
       document.getElementById('displayGoal').textContent = goal.toLocaleString();
-      document.getElementById('displaySavings').textContent = savings.toLocaleString();
 
-      // プログレスバー
+      const currentMonth = new Date().toISOString().substring(0, 7);
+      let totalIncome = 0;
+      let totalExpense = 0;
+      let savings = 0;
+
+      records.forEach(record => {
+        if (record.date.substring(0, 7) === currentMonth) {
+          if (record.type === 'income') {
+            totalIncome += record.amount;
+          } else {
+            totalExpense += record.amount;
+          }
+        }
+      });
+
+      savings = totalIncome - totalExpense;
+
+      document.getElementById('displaySavings').textContent = savings.toLocaleString();
+      document.getElementById('totalIncome').textContent = totalIncome.toLocaleString();
+      document.getElementById('totalExpense').textContent = totalExpense.toLocaleString();
+      document.getElementById('monthBalance').textContent = savings.toLocaleString();
+
       const percent = Math.min((savings / goal) * 100, 100);
       document.getElementById('progressFill').style.width = percent + '%';
       document.getElementById('progressPercent').textContent = percent.toFixed(1);
 
-      // 達成バナー
-      if (achievementNotified) {
+      if (savings >= goal && !achievementNotified) {
+        achievementNotified = true;
+        saveData();
+        document.getElementById('achievementBanner').classList.remove('hidden');
+      } else if (savings >= goal && achievementNotified) {
         document.getElementById('achievementBanner').classList.remove('hidden');
       } else {
         document.getElementById('achievementBanner').classList.add('hidden');
       }
 
-      // グラフ表示
-      if (history.length > 0) {
+      if (records.length > 0) {
         document.getElementById('chartSection').classList.remove('hidden');
         updateChart();
       } else {
         document.getElementById('chartSection').classList.add('hidden');
       }
 
-      // 履歴表示
-      if (history.length > 0) {
-        document.getElementById('historySection').classList.remove('hidden');
-        updateHistory();
+      if (records.length > 0) {
+        document.getElementById('recordsSection').classList.remove('hidden');
+        updateRecordsList();
       } else {
-        document.getElementById('historySection').classList.add('hidden');
+        document.getElementById('recordsSection').classList.add('hidden');
       }
     }
 
-    // グラフ更新
     function updateChart() {
       const canvas = document.getElementById('savingsChart');
-      const last7 = history.slice(-7);
-      const labels = last7.map(item => item.date.slice(5, 10));
-      const data = last7.map(item => item.savings);
+      const last7Days = getLast7Days();
 
       if (chart) {
         chart.destroy();
@@ -779,10 +927,10 @@
       chart = new Chart(canvas, {
         type: 'line',
         data: {
-          labels: labels,
+          labels: last7Days.labels,
           datasets: [{
             label: '貯金額',
-            data: data,
+            data: last7Days.data,
             borderColor: '#4CAF50',
             backgroundColor: 'rgba(76, 175, 80, 0.1)',
             borderWidth: 2,
@@ -815,45 +963,88 @@
       });
     }
 
-    // 履歴表示
-    function updateHistory() {
-      const historyList = document.getElementById('historyList');
-      historyList.innerHTML = '';
+    function getLast7Days() {
+      const today = new Date();
+      const labels = [];
+      const data = [];
+      const currentMonth = new Date().toISOString().substring(0, 7);
 
-      // 逆順で表示
-      const sorted = [...history].reverse();
-      sorted.forEach(item => {
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        labels.push(dateStr.substring(5, 10));
+
+        let cumulative = 0;
+        records.forEach(record => {
+          if (record.date <= dateStr && record.date.substring(0, 7) === currentMonth) {
+            if (record.type === 'income') {
+              cumulative += record.amount;
+            } else {
+              cumulative -= record.amount;
+            }
+          }
+        });
+        data.push(cumulative);
+      }
+
+      return { labels, data };
+    }
+
+    function updateRecordsList() {
+      const recordsList = document.getElementById('recordsList');
+      recordsList.innerHTML = '';
+
+      const sorted = [...records].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      sorted.forEach((record, sortedIndex) => {
+        const originalIndex = records.findIndex(r => r.date === record.date && r.type === record.type && r.amount === record.amount);
+
         const div = document.createElement('div');
-        div.className = 'history-item';
+        div.className = `record-item ${record.type}`;
         div.innerHTML = `
-          <div class="history-date">${item.date}</div>
-          <div class="history-amount">+¥${item.amount.toLocaleString()}</div>
-          <div class="history-total">残高: ¥${item.savings.toLocaleString()}</div>
+          <div class="record-info">
+            <div class="record-date">${record.date}</div>
+            <div>
+              <span class="record-type ${record.type}">${record.type === 'income' ? '収入' : '支出'}</span>
+            </div>
+          </div>
+          <div class="record-amount ${record.type}">¥${record.amount.toLocaleString()}</div>
+          <div class="record-actions">
+            <button class="btn-secondary btn-small" onclick="openEditModal(${originalIndex})">編集</button>
+            <button class="btn-danger btn-small" onclick="deleteRecord(${originalIndex})">削除</button>
+          </div>
         `;
-        historyList.appendChild(div);
+        recordsList.appendChild(div);
       });
     }
 
-    // データをダウンロード
     function downloadData() {
-      const data = {
-        goal: goal,
-        currentSavings: savings,
-        achievementPercent: (savings / goal * 100).toFixed(1),
-        history: history
-      };
+      const currentMonth = new Date().toISOString().substring(0, 7);
+      let totalIncome = 0;
+      let totalExpense = 0;
 
       const csv = [
         ['目標金額', goal],
-        ['現在の貯金', savings],
-        ['達成度', (savings / goal * 100).toFixed(1) + '%'],
         [''],
-        ['日付', '支出額', '残高']
+        ['日付', '種類', '金額']
       ];
 
-      history.forEach(item => {
-        csv.push([item.date, item.amount, item.savings]);
+      records.forEach(record => {
+        if (record.date.substring(0, 7) === currentMonth) {
+          csv.push([record.date, record.type === 'income' ? '収入' : '支出', record.amount]);
+          if (record.type === 'income') {
+            totalIncome += record.amount;
+          } else {
+            totalExpense += record.amount;
+          }
+        }
       });
+
+      csv.push(['']);
+      csv.push(['収入', totalIncome]);
+      csv.push(['支出', totalExpense]);
+      csv.push(['残高', totalIncome - totalExpense]);
 
       let csvContent = csv.map(row => row.join(',')).join('\n');
       let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -863,13 +1054,10 @@
       link.click();
     }
 
-    // リセット
     function resetApp() {
       if (confirm('目標をリセットしてすべてのデータを削除しますか？')) {
         goal = 0;
-        savings = 0;
-        history = [];
-        monthlyRecords = [];
+        records = [];
         achievementNotified = false;
         goalName = '';
         goalImage = null;
@@ -880,9 +1068,7 @@
         document.getElementById('goalPrice').value = '';
         document.getElementById('goalImage').value = '';
         document.getElementById('imagePreview').innerHTML = '';
-        document.getElementById('incomeInput').value = '';
-        document.getElementById('expenseInput').value = '';
-        document.getElementById('monthBalance').textContent = '0';
+        document.getElementById('recordAmount').value = '';
         updateDisplay();
         alert('リセットしました');
       }
