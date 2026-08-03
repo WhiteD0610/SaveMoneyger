@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>貯金目標アプリ</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background-color: #f5f5f5;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background-color: #4CAF50;
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+
+    .section {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .section h2 {
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #4CAF50;
+      padding-bottom: 10px;
+    }
+
+    .input-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #555;
+      font-weight: 500;
+    }
+
+    input[type="number"],
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+
+    input[type="number"]:focus,
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #4CAF50;
+      box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-primary {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #45a049;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+    }
+
+    .btn-danger {
+      background-color: #f44336;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background-color: #da190b;
+    }
+
+    .btn-secondary {
+      background-color: #2196F3;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background-color: #0b7dda;
+    }
+
+    /* モード選択 */
+    .mode-selector {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .mode-btn {
+      flex: 1;
+      padding: 10px;
+      border: 2px solid #ddd;
+      background-color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s;
+      color: #666;
+    }
+
+    .mode-btn.active {
+      background-color: #4CAF50;
+      color: white;
+      border-color: #4CAF50;
+    }
+
+    .mode-btn:hover {
+      border-color: #4CAF50;
+    }
+
+    /* 画像プレビュー */
+    .image-preview {
+      margin-top: 10px;
+      max-width: 200px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .image-preview img {
+      width: 100%;
+      max-height: 200px;
+      border-radius: 6px;
+      object-fit: cover;
+      margin-bottom: 10px;
+    }
+
+    .image-preview button {
+      width: 100%;
+      padding: 8px;
+      background-color: #f44336;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* 目標情報 */
+    .goal-info {
+      background-color: #f9f9f9;
+      padding: 15px;
+      border-left: 4px solid #4CAF50;
+      margin-bottom: 15px;
+      border-radius: 4px;
+    }
+
+    .goal-label {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+
+    .goal-amount {
+      font-size: 24px;
+      font-weight: bold;
+      color: #4CAF50;
+      margin-bottom: 10px;
+    }
+
+    .savings-amount {
+      font-size: 20px;
+      font-weight: bold;
+      color: #2196F3;
+      margin-bottom: 15px;
+    }
+
+    .goal-image-display {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .goal-image-display img {
+      max-width: 150px;
+      max-height: 150px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+
+    .goal-name-text {
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    /* プログレスバー */
+    .progress-container {
+      margin: 20px 0;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 12px;
+      background-color: #eee;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background-color: #4CAF50;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    /* グラフ */
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin-bottom: 20px;
+    }
+
+    /* 履歴 */
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background-color: #f9f9f9;
+      border-left: 4px solid #4CAF50;
+      margin-bottom: 8px;
+      border-radius: 4px;
+    }
+
+    .history-date {
+      color: #999;
+      font-size: 14px;
+      min-width: 80px;
+    }
+
+    .history-amount {
+      color: #4CAF50;
+      font-weight: bold;
+      font-size: 16px;
+      flex: 1;
+      text-align: center;
+    }
+
+    .history-total {
+      color: #666;
+      font-size: 14px;
+      min-width: 100px;
+      text-align: right;
+    }
+
+    /* 通知 */
+    .achievement-banner {
+      background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      margin-bottom: 20px;
+      animation: slideIn 0.5s ease;
+    }
+
+    .achievement-banner h3 {
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateY(-20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    /* レスポンシブ */
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+
+      .header h1 {
+        font-size: 24px;
+      }
+
+      .section {
+        padding: 15px;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- ヘッダー -->
+    <div class="header">
+      <h1>🏦 貯金目標アプリ</h1>
+      <p>支出を記録していくと自動で貯金が増えます</p>
+    </div>
+
+    <!-- 達成バナー -->
+    <div id="achievementBanner" class="achievement-banner hidden">
+      <h3>🎉 目標達成！</h3>
+      <p>おめでとうございます！目標金額に到達しました</p>
+    </div>
+
+    <!-- 目標設定画面 -->
+    <div id="goalSetup" class="section">
+      <h2>目標を設定</h2>
+      
+      <!-- モード選択 -->
+      <div class="mode-selector">
+        <button class="mode-btn active" onclick="switchMode('simple')">シンプル（金額のみ）</button>
+        <button class="mode-btn" onclick="switchMode('detailed')">詳細（品名・写真）</button>
+      </div>
+
+      <!-- シンプルモード -->
+      <div id="simpleMode">
+        <div class="input-group">
+          <label for="goalInput">欲しい金額（円）</label>
+          <input type="number" id="goalInput" placeholder="例: 100000" min="1" step="1000">
+        </div>
+        <button class="btn-primary" onclick="setGoal()" style="width: 100%;">目標を設定する</button>
+      </div>
+
+      <!-- 詳細モード -->
+      <div id="detailedMode" class="hidden">
+        <div class="input-group">
+          <label for="goalName">欲しいもの（品名）</label>
+          <input type="text" id="goalName" placeholder="例：ノートパソコン">
+        </div>
+        <div class="input-group">
+          <label for="goalPrice">金額（円）</label>
+          <input type="number" id="goalPrice" placeholder="例: 150000" min="1" step="1000">
+        </div>
+        <div class="input-group">
+          <label for="goalImage">写真をアップロード（任意）</label>
+          <input type="file" id="goalImage" accept="image/*">
+          <div id="imagePreview" class="image-preview"></div>
+        </div>
+        <button class="btn-primary" onclick="setGoalDetailed()" style="width: 100%;">目標を設定する</button>
+      </div>
+    </div>
+
+    <!-- メイン画面 -->
+    <div id="mainApp" class="hidden">
+      <!-- 目標情報 -->
+      <div class="section">
+        <div class="goal-info">
+          <div id="goalImageDisplay" class="goal-image-display"></div>
+          <div id="goalNameDisplay" class="hidden">
+            <div class="goal-label">欲しいもの</div>
+            <div class="goal-name-text" id="goalNameText"></div>
+          </div>
+          <div class="goal-label">目標金額</div>
+          <div class="goal-amount">¥<span id="displayGoal">0</span></div>
+          <div class="goal-label">現在の貯金</div>
+          <div class="savings-amount">¥<span id="displaySavings">0</span></div>
+        </div>
+
+        <!-- プログレスバー -->
+        <div class="progress-container">
+          <div class="progress-bar">
+            <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+          </div>
+          <div class="progress-text"><span id="progressPercent">0</span>% 達成</div>
+        </div>
+      </div>
+
+      <!-- 支出入力 -->
+      <div class="section">
+        <h2>支出を記録</h2>
+        <div class="input-group">
+          <label for="spendingInput">支出額（円）</label>
+          <input type="number" id="spendingInput" placeholder="支出額を入力" min="1" step="100">
+        </div>
+        <button class="btn-primary" onclick="addSpending()" style="width: 100%;">記録する</button>
+      </div>
+
+      <!-- グラフ -->
+      <div id="chartSection" class="section hidden">
+        <h2>貯金推移（直近7日）</h2>
+        <div class="chart-container">
+          <canvas id="savingsChart"></canvas>
+        </div>
+      </div>
+
+      <!-- 履歴 -->
+      <div id="historySection" class="section hidden">
+        <h2>記録履歴</h2>
+        <div id="historyList"></div>
+      </div>
+
+      <!-- 操作ボタン -->
+      <div class="section">
+        <div class="button-group">
+          <button class="btn-secondary" onclick="downloadData()">データをダウンロード</button>
+          <button class="btn-danger" onclick="resetApp()">リセット</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // グローバル変数
+    let goal = 0;
+    let savings = 0;
+    let history = [];
+    let achievementNotified = false;
+    let chart = null;
+    let currentMode = 'simple'; // 'simple' or 'detailed'
+    let goalName = '';
+    let goalImage = null; // Base64形式の画像データ
+
+    // ページ読み込み時
+    window.addEventListener('load', function() {
+      loadData();
+      updateDisplay();
+      
+      // 画像入力のイベントリスナーを設定
+      const imageInput = document.getElementById('goalImage');
+      if (imageInput) {
+        imageInput.addEventListener('change', function(e) {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+              goalImage = event.target.result;
+              showImagePreview(goalImage);
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+      }
+    });
+
+    // ローカルストレージから読み込み
+    function loadData() {
+      const stored = localStorage.getItem('savingsAppData');
+      if (stored) {
+        const data = JSON.parse(stored);
+        goal = data.goal || 0;
+        savings = data.savings || 0;
+        history = data.history || [];
+        achievementNotified = data.achievementNotified || false;
+        currentMode = data.currentMode || 'simple';
+        goalName = data.goalName || '';
+        goalImage = data.goalImage || null;
+      }
+    }
+
+    // ローカルストレージに保存
+    function saveData() {
+      const data = {
+        goal,
+        savings,
+        history,
+        achievementNotified,
+        currentMode,
+        goalName,
+        goalImage
+      };
+      localStorage.setItem('savingsAppData', JSON.stringify(data));
+    }
+
+    // モード切り替え
+    function switchMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+      if (mode === 'simple') {
+        document.querySelector('.mode-btn:nth-child(1)').classList.add('active');
+        document.getElementById('simpleMode').classList.remove('hidden');
+        document.getElementById('detailedMode').classList.add('hidden');
+      } else {
+        document.querySelector('.mode-btn:nth-child(2)').classList.add('active');
+        document.getElementById('simpleMode').classList.add('hidden');
+        document.getElementById('detailedMode').classList.remove('hidden');
+      }
+    }
+
+    // 目標を設定（シンプルモード）
+    function setGoal() {
+      const input = document.getElementById('goalInput');
+      const amount = parseInt(input.value);
+
+      if (!amount || amount <= 0) {
+        alert('正しい金額を入力してください');
+        return;
+      }
+
+      currentMode = 'simple';
+      goal = amount;
+      goalName = '';
+      goalImage = null;
+      savings = 0;
+      history = [];
+      achievementNotified = false;
+      saveData();
+      updateDisplay();
+      alert(`目標金額: ¥${amount.toLocaleString()} で設定しました！`);
+    }
+
+    // 目標を設定（詳細モード）
+    function setGoalDetailed() {
+      const name = document.getElementById('goalName').value;
+      const price = parseInt(document.getElementById('goalPrice').value);
+
+      if (!name.trim()) {
+        alert('欲しいものの名前を入力してください');
+        return;
+      }
+
+      if (!price || price <= 0) {
+        alert('正しい金額を入力してください');
+        return;
+      }
+
+      currentMode = 'detailed';
+      goal = price;
+      goalName = name;
+      savings = 0;
+      history = [];
+      achievementNotified = false;
+      saveData();
+      updateDisplay();
+      alert(`目標: ${name} ¥${price.toLocaleString()} で設定しました！`);
+    }
+
+
+
+    // 画像プレビュー表示
+    function showImagePreview(imageData) {
+      const preview = document.getElementById('imagePreview');
+      preview.innerHTML = `
+        <img src="${imageData}" alt="プレビュー">
+        <button onclick="clearImage()">画像を削除</button>
+      `;
+    }
+
+    // 画像削除
+    function clearImage() {
+      goalImage = null;
+      document.getElementById('goalImage').value = '';
+      document.getElementById('imagePreview').innerHTML = '';
+    }
+
+    // 支出を追加
+    function addSpending() {
+      const input = document.getElementById('spendingInput');
+      const amount = parseInt(input.value);
+
+      if (!amount || amount <= 0) {
+        alert('正しい金額を入力してください');
+        return;
+      }
+
+      savings += amount;
+      const today = new Date().toISOString().split('T')[0];
+      history.push({
+        date: today,
+        amount: amount,
+        savings: savings
+      });
+
+      input.value = '';
+      saveData();
+      updateDisplay();
+      alert(`¥${amount.toLocaleString()} を記録しました`);
+
+      // 達成判定
+      if (savings >= goal && !achievementNotified) {
+        achievementNotified = true;
+        saveData();
+        updateDisplay();
+      }
+    }
+
+    // 表示を更新
+    function updateDisplay() {
+      // 目標設定画面 / メイン画面の切り替え
+      if (goal === 0) {
+        document.getElementById('goalSetup').classList.remove('hidden');
+        document.getElementById('mainApp').classList.add('hidden');
+      } else {
+        document.getElementById('goalSetup').classList.add('hidden');
+        document.getElementById('mainApp').classList.remove('hidden');
+      }
+
+      // 詳細モードの情報を表示
+      if (currentMode === 'detailed' && goalName) {
+        document.getElementById('goalNameDisplay').classList.remove('hidden');
+        document.getElementById('goalNameText').textContent = goalName;
+        
+        if (goalImage) {
+          document.getElementById('goalImageDisplay').innerHTML = `<img src="${goalImage}" alt="${goalName}">`;
+        } else {
+          document.getElementById('goalImageDisplay').innerHTML = '';
+        }
+      } else {
+        document.getElementById('goalNameDisplay').classList.add('hidden');
+        document.getElementById('goalImageDisplay').innerHTML = '';
+      }
+
+      // 数字の更新
+      document.getElementById('displayGoal').textContent = goal.toLocaleString();
+      document.getElementById('displaySavings').textContent = savings.toLocaleString();
+
+      // プログレスバー
+      const percent = Math.min((savings / goal) * 100, 100);
+      document.getElementById('progressFill').style.width = percent + '%';
+      document.getElementById('progressPercent').textContent = percent.toFixed(1);
+
+      // 達成バナー
+      if (achievementNotified) {
+        document.getElementById('achievementBanner').classList.remove('hidden');
+      } else {
+        document.getElementById('achievementBanner').classList.add('hidden');
+      }
+
+      // グラフ表示
+      if (history.length > 0) {
+        document.getElementById('chartSection').classList.remove('hidden');
+        updateChart();
+      } else {
+        document.getElementById('chartSection').classList.add('hidden');
+      }
+
+      // 履歴表示
+      if (history.length > 0) {
+        document.getElementById('historySection').classList.remove('hidden');
+        updateHistory();
+      } else {
+        document.getElementById('historySection').classList.add('hidden');
+      }
+    }
+
+    // グラフ更新
+    function updateChart() {
+      const canvas = document.getElementById('savingsChart');
+      const last7 = history.slice(-7);
+      const labels = last7.map(item => item.date.slice(5, 10));
+      const data = last7.map(item => item.savings);
+
+      if (chart) {
+        chart.destroy();
+      }
+
+      chart = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '貯金額',
+            data: data,
+            borderColor: '#4CAF50',
+            backgroundColor: 'rgba(76, 175, 80, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#4CAF50',
+            pointRadius: 4,
+            pointHoverRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return '¥' + value.toLocaleString();
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // 履歴表示
+    function updateHistory() {
+      const historyList = document.getElementById('historyList');
+      historyList.innerHTML = '';
+
+      // 逆順で表示
+      const sorted = [...history].reverse();
+      sorted.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'history-item';
+        div.innerHTML = `
+          <div class="history-date">${item.date}</div>
+          <div class="history-amount">+¥${item.amount.toLocaleString()}</div>
+          <div class="history-total">残高: ¥${item.savings.toLocaleString()}</div>
+        `;
+        historyList.appendChild(div);
+      });
+    }
+
+    // データをダウンロード
+    function downloadData() {
+      const data = {
+        goal: goal,
+        currentSavings: savings,
+        achievementPercent: (savings / goal * 100).toFixed(1),
+        history: history
+      };
+
+      const csv = [
+        ['目標金額', goal],
+        ['現在の貯金', savings],
+        ['達成度', (savings / goal * 100).toFixed(1) + '%'],
+        [''],
+        ['日付', '支出額', '残高']
+      ];
+
+      history.forEach(item => {
+        csv.push([item.date, item.amount, item.savings]);
+      });
+
+      let csvContent = csv.map(row => row.join(',')).join('\n');
+      let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      let link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `savings_${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+    }
+
+    // リセット
+    function resetApp() {
+      if (confirm('目標をリセットしてすべてのデータを削除しますか？')) {
+        goal = 0;
+        savings = 0;
+        history = [];
+        achievementNotified = false;
+        goalName = '';
+        goalImage = null;
+        currentMode = 'simple';
+        localStorage.clear();
+        document.getElementById('goalInput').value = '';
+        document.getElementById('goalName').value = '';
+        document.getElementById('goalPrice').value = '';
+        document.getElementById('goalImage').value = '';
+        document.getElementById('imagePreview').innerHTML = '';
+        updateDisplay();
+        alert('リセットしました');
+      }
+    }
+  </script>
+</body>
+</html>
