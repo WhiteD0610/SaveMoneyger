@@ -470,6 +470,138 @@
       margin-bottom: 5px;
     }
 
+    .achievement-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .btn-buy {
+      background-color: white;
+      color: #4CAF50;
+    }
+
+    .btn-buy:hover {
+      background-color: #f0f0f0;
+    }
+
+    .btn-hold {
+      background-color: rgba(255, 255, 255, 0.25);
+      color: white;
+      border: 2px solid white;
+    }
+
+    .btn-hold:hover {
+      background-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .modal-note {
+      color: #888;
+      font-size: 13px;
+      margin-bottom: 15px;
+    }
+
+    .hold-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background-color: #f0f4ff;
+      border-left: 4px solid #5c6bc0;
+      margin-bottom: 8px;
+      border-radius: 4px;
+      flex-wrap: wrap;
+    }
+
+    .hold-item img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    .hold-info {
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .hold-name {
+      font-weight: bold;
+      color: #333;
+    }
+
+    .hold-date {
+      color: #999;
+      font-size: 12px;
+    }
+
+    .hold-shortage {
+      color: #f44336;
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .hold-amount {
+      font-weight: bold;
+      color: #5c6bc0;
+      font-size: 16px;
+    }
+
+    .hold-actions {
+      display: flex;
+      gap: 5px;
+    }
+
+    .btn-disabled {
+      background-color: #ccc;
+      color: #888;
+      cursor: not-allowed;
+    }
+
+    .btn-disabled:hover {
+      background-color: #ccc;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .purchase-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background-color: #fff8e1;
+      border-left: 4px solid #ff9800;
+      margin-bottom: 8px;
+      border-radius: 4px;
+    }
+
+    .purchase-item img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    .purchase-info {
+      flex: 1;
+    }
+
+    .purchase-name {
+      font-weight: bold;
+      color: #333;
+    }
+
+    .purchase-date {
+      color: #999;
+      font-size: 12px;
+    }
+
+    .purchase-amount {
+      font-weight: bold;
+      color: #ff9800;
+      font-size: 16px;
+    }
+
     @keyframes slideIn {
       from {
         transform: translateY(-20px);
@@ -513,7 +645,11 @@
 
     <div id="achievementBanner" class="achievement-banner hidden">
       <h3>🎉 目標達成！</h3>
-      <p>おめでとうございます！目標金額に到達しました</p>
+      <p id="achievementText">おめでとうございます！目標金額に到達しました</p>
+      <div class="achievement-actions">
+        <button class="btn-buy" onclick="purchaseGoal()">購入する</button>
+        <button class="btn-hold" onclick="holdAndNewGoal()">保留して新しい目標を設定</button>
+      </div>
     </div>
 
     <div id="goalSetup" class="section goal-setup">
@@ -562,6 +698,7 @@
           <div class="goal-amount">¥<span id="displayGoal">0</span></div>
           <div class="goal-label">現在の貯金</div>
           <div class="savings-amount">¥<span id="displaySavings">0</span></div>
+          <button class="btn-secondary btn-small" onclick="openGoalEditModal()">目標を編集</button>
         </div>
 
         <div class="progress-container">
@@ -641,6 +778,41 @@
         </div>
       </div>
     </div>
+
+    <div id="holdSection" class="section hidden">
+      <h2>保留履歴</h2>
+      <div id="holdList"></div>
+    </div>
+
+    <div id="purchaseSection" class="section hidden">
+      <h2>購入履歴</h2>
+      <div id="purchaseList"></div>
+    </div>
+  </div>
+
+  <div id="goalEditModal" class="modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeGoalEditModal()">×</button>
+      <div class="modal-header">目標を編集</div>
+      <p class="modal-note">記録はそのまま残ります</p>
+      <div class="input-group">
+        <label for="editGoalName">欲しいもの（任意）</label>
+        <input type="text" id="editGoalName" placeholder="例：ノートパソコン">
+      </div>
+      <div class="input-group">
+        <label for="editGoalPrice">目標金額（円）</label>
+        <input type="number" id="editGoalPrice" min="1" step="1000">
+      </div>
+      <div class="input-group">
+        <label for="editGoalImage">写真（任意）</label>
+        <input type="file" id="editGoalImage" accept="image/*">
+        <div id="editImagePreview" class="image-preview"></div>
+      </div>
+      <div class="button-group">
+        <button class="btn-primary" onclick="saveGoalEdit()">保存</button>
+        <button class="btn-danger" onclick="closeGoalEditModal()">キャンセル</button>
+      </div>
+    </div>
   </div>
 
   <div id="editModal" class="modal">
@@ -683,6 +855,9 @@
     let goalImage = null;
     let editingIndex = -1;
     let chartRange = 'month';
+    let purchases = [];
+    let holds = [];
+    let editGoalImage = null;
 
     window.addEventListener('load', function() {
       loadData();
@@ -706,6 +881,21 @@
           }
         });
       }
+
+      const editImageInput = document.getElementById('editGoalImage');
+      if (editImageInput) {
+        editImageInput.addEventListener('change', function(e) {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+              editGoalImage = event.target.result;
+              renderEditImagePreview();
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+      }
     });
 
     function loadData() {
@@ -718,6 +908,8 @@
         currentMode = data.currentMode || 'simple';
         goalName = data.goalName || '';
         goalImage = data.goalImage || null;
+        purchases = data.purchases || [];
+        holds = data.holds || [];
         // 旧データにIDとメモを付与
         records.forEach((r, i) => {
           if (r.id === undefined) r.id = Date.now() + i;
@@ -733,7 +925,9 @@
         achievementNotified,
         currentMode,
         goalName,
-        goalImage
+        goalImage,
+        purchases,
+        holds
       };
       localStorage.setItem('savingsAppData', JSON.stringify(data));
     }
@@ -765,7 +959,6 @@
       goal = amount;
       goalName = '';
       goalImage = null;
-      records = [];
       achievementNotified = false;
       saveData();
       updateDisplay();
@@ -789,7 +982,6 @@
       currentMode = 'detailed';
       goal = price;
       goalName = name;
-      records = [];
       achievementNotified = false;
       saveData();
       updateDisplay();
@@ -808,6 +1000,263 @@
       goalImage = null;
       document.getElementById('goalImage').value = '';
       document.getElementById('imagePreview').innerHTML = '';
+    }
+
+    // ===== 目標の編集 =====
+    function openGoalEditModal() {
+      editGoalImage = goalImage;
+      document.getElementById('editGoalName').value = goalName || '';
+      document.getElementById('editGoalPrice').value = goal;
+      document.getElementById('editGoalImage').value = '';
+      renderEditImagePreview();
+      document.getElementById('goalEditModal').classList.add('active');
+    }
+
+    function closeGoalEditModal() {
+      document.getElementById('goalEditModal').classList.remove('active');
+      editGoalImage = null;
+    }
+
+    function renderEditImagePreview() {
+      const preview = document.getElementById('editImagePreview');
+      if (editGoalImage) {
+        preview.innerHTML = `
+          <img src="${editGoalImage}" alt="プレビュー">
+          <button onclick="clearEditImage()">画像を削除</button>
+        `;
+      } else {
+        preview.innerHTML = '';
+      }
+    }
+
+    function clearEditImage() {
+      editGoalImage = null;
+      document.getElementById('editGoalImage').value = '';
+      renderEditImagePreview();
+    }
+
+    function saveGoalEdit() {
+      const name = document.getElementById('editGoalName').value.trim();
+      const price = parseInt(document.getElementById('editGoalPrice').value);
+
+      if (!price || price <= 0) {
+        alert('正しい金額を入力してください');
+        return;
+      }
+
+      goal = price;
+      goalName = name;
+      goalImage = editGoalImage;
+      currentMode = name ? 'detailed' : 'simple';
+      // 目標変更に伴い達成通知をリセット
+      achievementNotified = false;
+
+      saveData();
+      updateDisplay();
+      closeGoalEditModal();
+      alert('目標を更新しました');
+    }
+
+    // ===== 購入 =====
+    function purchaseGoal() {
+      const label = goalName || `目標（¥${goal.toLocaleString()}）`;
+      if (!confirm(`「${label}」を購入しますか？\n¥${goal.toLocaleString()} が支出として記録されます`)) return;
+
+      const today = new Date().toISOString().split('T')[0];
+
+      // 支出として記録
+      records.push({
+        id: Date.now() + Math.random(),
+        date: today,
+        type: 'expense',
+        amount: goal,
+        memo: `【購入】${label}`
+      });
+
+      // 購入履歴に保存
+      purchases.push({
+        id: Date.now() + Math.random(),
+        date: today,
+        name: goalName || '（名称なし）',
+        amount: goal,
+        image: goalImage
+      });
+
+      // 目標をクリアして新しい目標設定へ
+      goal = 0;
+      goalName = '';
+      goalImage = null;
+      currentMode = 'simple';
+      achievementNotified = false;
+
+      saveData();
+      updateDisplay();
+      alert(`「${label}」を購入しました！\n次の目標を設定してください`);
+    }
+
+    // ===== 保留して新しい目標を設定 =====
+    function holdAndNewGoal() {
+      if (!confirm('この目標を保留して、新しい目標を設定しますか？\n貯金額と記録はそのまま引き継がれます')) return;
+
+      const today = new Date().toISOString().split('T')[0];
+
+      // 保留履歴に保存
+      holds.push({
+        id: Date.now() + Math.random(),
+        date: today,
+        name: goalName || '（名称なし）',
+        amount: goal,
+        image: goalImage
+      });
+
+      goal = 0;
+      goalName = '';
+      goalImage = null;
+      currentMode = 'simple';
+      achievementNotified = false;
+
+      saveData();
+      updateDisplay();
+    }
+
+    // 現在の累計残高を返す
+    function getCurrentSavings() {
+      return records.reduce((sum, r) => sum + (r.type === 'income' ? r.amount : -r.amount), 0);
+    }
+
+    // 保留中のものを購入
+    function purchaseHold(id) {
+      const item = holds.find(h => h.id === id);
+      if (!item) return;
+
+      const savings = getCurrentSavings();
+      if (savings < item.amount) {
+        alert(`残高が不足しています\n必要：¥${item.amount.toLocaleString()}／現在：¥${savings.toLocaleString()}`);
+        return;
+      }
+
+      if (!confirm(`「${item.name}」を購入しますか？\n¥${item.amount.toLocaleString()} が支出として記録されます`)) return;
+
+      const today = new Date().toISOString().split('T')[0];
+
+      records.push({
+        id: Date.now() + Math.random(),
+        date: today,
+        type: 'expense',
+        amount: item.amount,
+        memo: `【購入】${item.name}`
+      });
+
+      purchases.push({
+        id: Date.now() + Math.random(),
+        date: today,
+        name: item.name,
+        amount: item.amount,
+        image: item.image
+      });
+
+      // 保留履歴から削除
+      holds = holds.filter(h => h.id !== id);
+
+      saveData();
+      updateDisplay();
+      alert(`「${item.name}」を購入しました！`);
+    }
+
+    // 保留を削除
+    function deleteHold(id) {
+      if (!confirm('この保留を削除しますか？')) return;
+      holds = holds.filter(h => h.id !== id);
+      saveData();
+      updateDisplay();
+    }
+
+    // 保留を現在の目標に戻す
+    function restoreHold(id) {
+      const item = holds.find(h => h.id === id);
+      if (!item) return;
+      if (goal > 0 && !confirm('現在の目標を保留履歴に移して、こちらを目標にしますか？')) return;
+
+      // 現在の目標があれば保留に退避
+      if (goal > 0) {
+        holds.push({
+          id: Date.now() + Math.random(),
+          date: new Date().toISOString().split('T')[0],
+          name: goalName || '（名称なし）',
+          amount: goal,
+          image: goalImage
+        });
+      }
+
+      goal = item.amount;
+      goalName = item.name === '（名称なし）' ? '' : item.name;
+      goalImage = item.image;
+      currentMode = goalName ? 'detailed' : 'simple';
+      achievementNotified = false;
+
+      holds = holds.filter(h => h.id !== id);
+      saveData();
+      updateDisplay();
+    }
+
+    // 保留履歴を表示
+    function updateHoldList() {
+      const list = document.getElementById('holdList');
+      list.innerHTML = '';
+
+      const savings = getCurrentSavings();
+      const sorted = [...holds].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      sorted.forEach(h => {
+        const canBuy = savings >= h.amount;
+        const shortage = h.amount - savings;
+        const div = document.createElement('div');
+        div.className = 'hold-item';
+        const img = h.image ? `<img src="${h.image}" alt="">` : '';
+        const shortageHtml = canBuy ? '' : `<div class="hold-shortage">あと ¥${shortage.toLocaleString()}</div>`;
+        const buyBtn = canBuy
+          ? `<button class="btn-primary btn-small" onclick="purchaseHold(${h.id})">購入する</button>`
+          : `<button class="btn-disabled btn-small" disabled>残高不足</button>`;
+
+        div.innerHTML = `
+          ${img}
+          <div class="hold-info">
+            <div class="hold-name">${escapeHtml(h.name)}</div>
+            <div class="hold-date">保留日：${h.date}</div>
+            ${shortageHtml}
+          </div>
+          <div class="hold-amount">¥${h.amount.toLocaleString()}</div>
+          <div class="hold-actions">
+            ${buyBtn}
+            <button class="btn-secondary btn-small" onclick="restoreHold(${h.id})">目標に戻す</button>
+            <button class="btn-danger btn-small" onclick="deleteHold(${h.id})">削除</button>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    // 購入履歴を表示
+    function updatePurchaseList() {
+      const list = document.getElementById('purchaseList');
+      list.innerHTML = '';
+
+      const sorted = [...purchases].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      sorted.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'purchase-item';
+        const img = p.image ? `<img src="${p.image}" alt="">` : '';
+        div.innerHTML = `
+          ${img}
+          <div class="purchase-info">
+            <div class="purchase-name">${escapeHtml(p.name)}</div>
+            <div class="purchase-date">${p.date}</div>
+          </div>
+          <div class="purchase-amount">¥${p.amount.toLocaleString()}</div>
+        `;
+        list.appendChild(div);
+      });
     }
 
     function addRecord() {
@@ -943,14 +1392,33 @@
       document.getElementById('progressFill').style.width = percent + '%';
       document.getElementById('progressPercent').textContent = percent.toFixed(1);
 
-      if (savings >= goal && !achievementNotified) {
+      if (goal > 0 && savings >= goal && !achievementNotified) {
         achievementNotified = true;
         saveData();
-        document.getElementById('achievementBanner').classList.remove('hidden');
-      } else if (savings >= goal && achievementNotified) {
+      }
+
+      if (goal > 0 && savings >= goal) {
+        const label = goalName ? `「${goalName}」` : '目標金額';
+        document.getElementById('achievementText').textContent = `${label}の¥${goal.toLocaleString()}に到達しました`;
         document.getElementById('achievementBanner').classList.remove('hidden');
       } else {
         document.getElementById('achievementBanner').classList.add('hidden');
+      }
+
+      // 保留履歴
+      if (holds.length > 0) {
+        document.getElementById('holdSection').classList.remove('hidden');
+        updateHoldList();
+      } else {
+        document.getElementById('holdSection').classList.add('hidden');
+      }
+
+      // 購入履歴
+      if (purchases.length > 0) {
+        document.getElementById('purchaseSection').classList.remove('hidden');
+        updatePurchaseList();
+      } else {
+        document.getElementById('purchaseSection').classList.add('hidden');
       }
 
       if (records.length > 0) {
@@ -1182,6 +1650,8 @@
       if (confirm('目標をリセットしてすべてのデータを削除しますか？')) {
         goal = 0;
         records = [];
+        purchases = [];
+        holds = [];
         achievementNotified = false;
         goalName = '';
         goalImage = null;
